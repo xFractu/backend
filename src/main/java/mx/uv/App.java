@@ -15,7 +15,8 @@ public class App
 {
     static Gson gson = new Gson();
     static HashMap<String, Usuario> usuarios = new HashMap<String, Usuario>();
-    
+    static String correoG;
+    static String passwordG;
     public static void main( String[] args )
     {
         System.out.println( "Hello World!" );
@@ -38,6 +39,15 @@ public class App
             return "OK";
         });
         before((request, response) -> response.header("Access-Control-Allow-Origin", "*"));
+
+        get("/backend/verificar-conexion", (request, response) -> {
+            response.type("application/json");
+            
+            JsonObject respuesta = new JsonObject();
+            respuesta.addProperty("mensaje", "Conexión exitosa al backend");
+            
+            return respuesta.toString();
+        });
 
         post("/frontend/", (request, response)->{
             response.type("application/json");
@@ -64,21 +74,41 @@ public class App
         post("/frontend/login", (request, response)->{
             response.type("application/json");
             String payload = request.body();
-            Usuario usuario = gson.fromJson(payload, Usuario.class);
-            System.out.println("usuario"+usuario);
             System.out.println("payload "+payload);
-            String id = UUID.randomUUID().toString();
-            usuario.setId(id);
-            usuarios.put(id, usuario);
             // DAO.crearUsuario(usuario);
-            System.out.println("n "+usuario.getCorreo());
-            System.out.println("p "+usuario.getPassword());
-            System.out.println("i "+usuario.getId());
 
+            String correo = "";
+            String password = "";
+
+            JsonElement jsonElement = JsonParser.parseString(payload);
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+
+            // Accede a la clave "datosFormulario" y luego obtén las claves "correo" y "password"
+            JsonObject datosFormulario = jsonObject.getAsJsonObject("datosFormulario");
+
+            if (datosFormulario != null && datosFormulario.has("correo") && datosFormulario.has("password")) {
+                correo = datosFormulario.get("correo").getAsString();
+                password = datosFormulario.get("password").getAsString();
+                System.out.println("Correogson: " + correo);
+                System.out.println("Passwordgson: " + password);
+            } else {
+                System.out.println("Las claves 'correo' y/o 'password' no están presentes en el JSON.");
+            }
+            boolean esUsuarioValido = DAO.validarUsuario(correo, password);
             JsonObject respuesta = new JsonObject();
-            respuesta.addProperty("msj", "Se creo el usuario");
+            if (esUsuarioValido) {
+            correoG = correo;
+            passwordG = password;
+            System.out.println("correo valido "+correoG);
+            System.out.println("password valido "+passwordG);
+            String id = DAO.obtenerIdUsuario(correoG,passwordG);
+            respuesta.addProperty("msj", "Valido");
             respuesta.addProperty("id", id);
-            return gson.toJson(usuario);
+            return "Valido";
+            } else {
+                respuesta.addProperty("msj", "Invalido");
+                return respuesta.toString();
+            }
         });
 
 

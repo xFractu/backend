@@ -94,4 +94,78 @@ public class DAO {
         }
         return msj;
     }
+
+    public static boolean validarUsuario(String correo, String password) {
+        PreparedStatement stm = null;
+        Connection conn = null;
+
+        conn = Conexion.getConnection();
+        try {
+            String sql = "SELECT * FROM usuarios WHERE correo = ? AND password = ?";
+            stm = conn.prepareStatement(sql);
+            stm.setString(1, correo);
+            stm.setString(2, password);
+
+            ResultSet rs = stm.executeQuery();
+
+            return rs.next(); // Devuelve true si hay una coincidencia, false si no hay coincidencia
+
+        } catch (Exception e) {
+            System.out.println(e);
+            return false; // Manejar adecuadamente las excepciones en tu aplicación real
+        } finally {
+            // Cerrar recursos
+            if (stm != null) {
+                try {
+                    stm.close();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+            try {
+                conn.close();
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        }
+    }
+
+    public static String obtenerIdUsuario(String correo, String password) {
+        PreparedStatement stm = null;
+        Connection conn = null;
+    
+        conn = Conexion.getConnection();
+        try {
+            String sql = "SELECT id FROM usuarios WHERE correo = ? AND password = ?";
+            stm = conn.prepareStatement(sql);
+            stm.setString(1, correo);
+            stm.setString(2, password);
+    
+            ResultSet rs = stm.executeQuery();
+    
+            if (rs.next()) {
+                return rs.getString("id"); // Devuelve el ID si hay una coincidencia
+            } else {
+                return "falso"; // Devuelve -1 si no hay coincidencia
+            }
+    
+        } catch (Exception e) {
+            System.out.println(e);
+            return "falso"; // Manejar adecuadamente las excepciones en tu aplicación real
+        } finally {
+            // Cerrar recursos
+            if (stm != null) {
+                try {
+                    stm.close();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+            try {
+                conn.close();
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        }
+    }
 }
