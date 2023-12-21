@@ -43,6 +43,10 @@ public class Usuario {
         return "Usuario [id=" + id + ", correo=" + correo + ", password=" + password + ", nombre=" + nombre +"]";
     }
 
+    public Usuario(){
+        
+    }
+
     public Usuario(String id, String correo, String password, String nombre) {
         this.id = id;
         this.correo = correo;

@@ -168,4 +168,50 @@ public class DAO {
             }
         }
     }
+
+    public static Usuario obtenerDatosUsuario(String id) {
+        PreparedStatement stm = null;
+        Connection conn = null;
+
+        conn = Conexion.getConnection();
+        try {
+            String sql = "SELECT * FROM usuarios WHERE id = ?";
+            stm = conn.prepareStatement(sql);
+            stm.setString(1, id);
+
+            ResultSet rs = stm.executeQuery();
+
+            if (rs.next()) {
+                // Crear un objeto Usuario con los datos del usuario
+                Usuario usuario = new Usuario();
+                usuario.setId(rs.getString("id"));
+                usuario.setCorreo(rs.getString("correo"));
+                usuario.setPassword(rs.getString("password"));
+                usuario.setNombre(rs.getString("nombre"));
+                // Agregar más campos según tu estructura de base de datos
+
+                return usuario;
+            } else {
+                return null; // Devuelve null si no hay coincidencia
+            }
+
+        } catch (Exception e) {
+            System.out.println(e);
+            return null; // Manejar adecuadamente las excepciones en tu aplicación real
+        } finally {
+            // Cerrar recursos
+            if (stm != null) {
+                try {
+                    stm.close();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+            try {
+                conn.close();
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        }
+    }
 }

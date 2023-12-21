@@ -17,6 +17,7 @@ public class App
     static HashMap<String, Usuario> usuarios = new HashMap<String, Usuario>();
     static String correoG;
     static String passwordG;
+        static String nombreG;
     public static void main( String[] args )
     {
         System.out.println( "Hello World!" );
@@ -70,8 +71,26 @@ public class App
             return gson.toJson(usuario);
         });
 
+        post("/frontend/obtenerUsuario", (request, response) -> {
+            response.type("application/json");
+        
+            // Puedes acceder a las variables globales directamente o utilizar métodos getter según tu implementación
+            String correo = correoG;
+            String password = passwordG;
+            String nombre = nombreG;
+        
+            // Construir un objeto JSON con los datos del usuario
+            JsonObject usuarioJson = new JsonObject();
+            usuarioJson.addProperty("correo", correo);
+            usuarioJson.addProperty("password", password);
+            usuarioJson.addProperty("nombre", nombre);
+            System.out.println(nombre);;
+            System.out.println(usuarioJson);
+            return usuarioJson.toString();
+        });
 
-        post("/frontend/login", (request, response)->{
+
+        post("/login", (request, response)->{
             response.type("application/json");
             String payload = request.body();
             System.out.println("payload "+payload);
@@ -102,12 +121,17 @@ public class App
             System.out.println("correo valido "+correoG);
             System.out.println("password valido "+passwordG);
             String id = DAO.obtenerIdUsuario(correoG,passwordG);
+            
+            Usuario usuario = DAO.obtenerDatosUsuario(id);
+            nombreG = usuario.getNombre();
+            System.out.println("nombre valido: "+nombreG);
             respuesta.addProperty("msj", "Valido");
+            respuesta.addProperty("nombre", usuario.getNombre());
             respuesta.addProperty("id", id);
-            return "Valido";
+            return gson.toJson(usuario);
             } else {
                 respuesta.addProperty("msj", "Invalido");
-                return respuesta.toString();
+                return "invalido";
             }
         });
 
