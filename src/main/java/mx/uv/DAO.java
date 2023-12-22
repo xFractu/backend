@@ -17,6 +17,7 @@ public class DAO {
         Statement stm = null;
         ResultSet rs = null;
         Connection conn = null;
+
         List<Usuario> resultado = new ArrayList<>();
 
         conn = Conexion.getConnection();
@@ -214,4 +215,108 @@ public class DAO {
             }
         }
     }
+
+
+    //Reservaciones
+
+    public static int obtenerNumeroReservaciones(String idUsuario) {
+        PreparedStatement stm = null;
+        Connection conn = null;
+
+        conn = Conexion.getConnection();
+        try {
+            String sql = "SELECT COUNT(*) as num_reservaciones FROM reservacion WHERE id_usuario = ?";
+            stm = conn.prepareStatement(sql);
+            stm.setString(1, idUsuario);
+
+            ResultSet rs = stm.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("num_reservaciones"); // Devuelve el número de reservaciones del usuario
+            } else {
+                return 0; // Devuelve 0 si no hay reservaciones
+            }
+
+        } catch (Exception e) {
+            System.out.println(e);
+            return 0; // Manejar adecuadamente las excepciones en tu aplicación real
+        } finally {
+            // Cerrar recursos
+            if (stm != null) {
+                try {
+                    stm.close();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+            try {
+                conn.close();
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        }
+    }
+
+    public static List<Reservaciones> dameReservacionesPorUsuario(String idUsuario) {
+        System.out.println("ENTRO AL METODO: dameReservacionesPorUsuario");
+        Statement stm = null;
+        ResultSet rs = null;
+        Connection conn = null;
+    
+        List<Reservaciones> resultado = new ArrayList<>();
+    
+        conn = Conexion.getConnection();
+        int i = 0;
+        try {
+            String sql = "SELECT r.id_reservacion, r.id_usuario, r.id_hotel, h.nombre as nombre_hotel, h.precio, "
+                       + "r.check_in, r.check_out, r.personas "
+                       + "FROM reservacion r "
+                       + "JOIN hotel h ON r.id_hotel = h.id "
+                       + "WHERE r.id_usuario = '" + idUsuario + "'";
+            stm = (Statement) conn.createStatement();
+            rs = stm.executeQuery(sql);
+            while (rs.next()) {
+                Reservaciones reservacion = new Reservaciones(
+                    rs.getString("id_reservacion"),
+                    rs.getString("id_usuario"),
+                    rs.getString("id_hotel"),
+                    rs.getString("nombre_hotel"),
+                    rs.getString("precio"),
+                    rs.getString("check_in"),
+                    rs.getString("check_out"),
+                    rs.getString("personas")
+                );
+                resultado.add(reservacion);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    System.out.println(e);
+                }
+            rs = null;
+            if (stm != null) {
+                try {
+                    stm.close();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+                stm = null;
+            }
+            try {
+                conn.close();
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        }
+    
+        return resultado;
+    }
+
+
+
+
 }

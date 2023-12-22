@@ -8,6 +8,7 @@ package mx.uv;
 import static spark.Spark.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import com.google.gson.*;
 
@@ -17,7 +18,8 @@ public class App
     static HashMap<String, Usuario> usuarios = new HashMap<String, Usuario>();
     static String correoG;
     static String passwordG;
-        static String nombreG;
+    static String nombreG;
+    static String idG;
     public static void main( String[] args )
     {
         System.out.println( "Hello World!" );
@@ -90,7 +92,7 @@ public class App
         });
 
 
-        post("/login", (request, response)->{
+        post("/frontend/login", (request, response)->{
             response.type("application/json");
             String payload = request.body();
             System.out.println("payload "+payload);
@@ -118,9 +120,12 @@ public class App
             if (esUsuarioValido) {
             correoG = correo;
             passwordG = password;
+            String id = DAO.obtenerIdUsuario(correoG,passwordG);
+            idG = id;
             System.out.println("correo valido "+correoG);
             System.out.println("password valido "+passwordG);
-            String id = DAO.obtenerIdUsuario(correoG,passwordG);
+            System.out.println("id valido "+passwordG);
+            
             
             Usuario usuario = DAO.obtenerDatosUsuario(id);
             nombreG = usuario.getNombre();
@@ -131,12 +136,57 @@ public class App
             return gson.toJson(usuario);
             } else {
                 respuesta.addProperty("msj", "Invalido");
-                return "invalido";
+                return "Invalido";
             }
         });
 
 
+        post("/frontend/obtenerReservaciones", (request, response) -> {
+            response.type("application/json");
+
+            // Obtener el ID del usuario desde la variable global
+            String idUsuario = idG;
+
+            // Obtener las reservaciones para el usuario
+            List<Reservaciones> reservaciones = DAO.dameReservacionesPorUsuario(idUsuario);
+
+            int numeroDeReservaciones = reservaciones.size();
+
+            System.out.println("Número de reservaciones: " + numeroDeReservaciones);
+
+            // Construir un objeto JSON con las reservaciones
+            JsonArray reservacionesArray = new JsonArray();
+            System.out.println("Todavia no entra al for" );
+            for (Reservaciones reservacion : reservaciones) {
+                JsonObject reservacionJson = new JsonObject();
+                reservacionJson.addProperty("id_reservacion", reservacion.getIdR());
+                reservacionJson.addProperty("id_usuario", reservacion.getIdU());
+                reservacionJson.addProperty("id_hotel", reservacion.getIdH());
+                reservacionJson.addProperty("nombre_hotel", reservacion.getNombre());
+                reservacionJson.addProperty("precio", reservacion.getPrecio());
+                reservacionJson.addProperty("check_in", reservacion.getCheckIn());
+                reservacionJson.addProperty("check_out", reservacion.getCheckOut());
+                reservacionJson.addProperty("personas", reservacion.getPersonas());
+                reservacionesArray.add(reservacionJson);
+                System.out.println("hola");
+            }
+
+            // Crear el objeto final que contiene todas las reservaciones
+            JsonObject responseJson = new JsonObject();
+            responseJson.add("reservaciones", reservacionesArray);
+
+            System.out.println(responseJson);
+            return responseJson.toString();
+        });
+
+
+
+
+
+
     }
+
+
 
     static int getHerokuAssignedPort() {
         ProcessBuilder processBuilder = new ProcessBuilder();
