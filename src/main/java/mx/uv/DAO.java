@@ -219,6 +219,48 @@ public class DAO {
 
     //Reservaciones
 
+
+    public static String hacerReservacion(Reservaciones r) {
+        PreparedStatement stm = null;
+        Connection conn = null;
+        String msj = "";
+
+        conn = Conexion.getConnection();
+        try {
+            String sql = "INSERT INTO reservacion (id_usuario, id_hotel, check_in, check_out, personas) VALUES (?,?,?,?,?)";
+            stm = conn.prepareStatement(sql);
+            stm.setString(1, r.getIdU());
+            stm.setString(2, r.getIdH());
+            stm.setString(3, r.getCheckIn());
+            stm.setString(4, r.getCheckOut());
+            stm.setString(5, r.getPersonas());
+
+            if (stm.executeUpdate() > 0)
+                msj = "Reservación realizada con éxito";
+            else
+                msj = "No se pudo realizar la reservación";
+
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            if (stm != null) {
+                try {
+                    stm.close();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+        }
+        return msj;
+    }
+
     public static int obtenerNumeroReservaciones(String idUsuario) {
         PreparedStatement stm = null;
         Connection conn = null;
@@ -316,6 +358,48 @@ public class DAO {
         return resultado;
     }
 
+
+    public static boolean eliminarReservacion(String idReservacion) {
+        System.out.println("ENTRO AL METODO: eliminarReservacion");
+        Statement stm = null;
+        Connection conn = null;
+        
+        conn = Conexion.getConnection();
+    
+        try {
+            String sql = "DELETE FROM reservacion WHERE id_reservacion = '" + idReservacion + "'";
+            stm = (Statement) conn.createStatement();
+            int filasAfectadas = stm.executeUpdate(sql);
+    
+            // Verificamos si se eliminó alguna fila
+            if (filasAfectadas > 0) {
+                System.out.println("Reservación eliminada exitosamente.");
+                return true;
+            } else {
+                System.out.println("No se encontró ninguna reservación con el ID especificado.");
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al eliminar la reservación: " + e);
+        } finally {
+            // Cierre de recursos
+            if (stm != null) {
+                try {
+                    stm.close();
+                } catch (SQLException e) {
+                    System.out.println(e);
+                }
+            }
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                System.out.println(e);
+            }
+        }
+    
+        return false;
+    }
+    
 
 
 

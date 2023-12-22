@@ -141,6 +141,61 @@ public class App
         });
 
 
+        post("/frontend/hacerReservacionHotel1", (request, response) -> {
+            response.type("application/json");
+            String payload = request.body();
+            
+            try {
+                JsonElement jsonElement = JsonParser.parseString(payload);
+                JsonObject jsonObject = jsonElement.getAsJsonObject();
+                JsonObject reservationDataJson = jsonObject.getAsJsonObject("reservationData");
+
+                System.out.println(reservationDataJson);
+
+                // Asignar valores faltantes a la reservación
+                Reservaciones reservacion = new Reservaciones();
+                reservacion.setIdR(UUID.randomUUID().toString());
+                reservacion.setIdU(idG); // Asigna el ID del usuario
+                reservacion.setIdH("1"); // Asigna el ID del hotel
+                reservacion.setNombre("Holiday Inn Express"); // Asigna el nombre
+                reservacion.setPrecio("1,600"); // Asigna el precio del hotel
+
+                // Asegúrate de que estás usando las claves correctas del JSON
+                if (reservationDataJson.has("checkInDate")) {
+                    reservacion.setCheckIn(reservationDataJson.get("checkInDate").getAsString());
+                }
+                if (reservationDataJson.has("checkOutDate")) {
+                    reservacion.setCheckOut(reservationDataJson.get("checkOutDate").getAsString());
+                }
+                if (reservationDataJson.has("quantity")) {
+                    reservacion.setPersonas(reservationDataJson.get("quantity").getAsString());
+                }
+
+                // Puedes realizar acciones adicionales con la información de la reservación
+                System.out.println("Reservación: " + reservacion);
+        
+                // Lógica para hacer la reservación en la base de datos
+                String mensaje = DAO.hacerReservacion(reservacion);
+        
+                // Crear la respuesta
+                JsonObject respuesta = new JsonObject();
+                respuesta.addProperty("msj", mensaje);
+        
+                return gson.toJson(respuesta);
+            } catch (JsonSyntaxException e) {
+                // Manejar errores de formato JSON
+                System.out.println("Error en el formato JSON: " + e.getMessage());
+                response.status(400); // Bad Request
+                return gson.toJson("Error en el formato JSON");
+            } catch (Exception e) {
+                // Manejar otros errores
+                System.out.println("Error en la reservación: " + e.getMessage());
+                response.status(500); // Internal Server Error
+                return gson.toJson("Error en la reservación");
+            }
+        });
+
+
         post("/frontend/obtenerReservaciones", (request, response) -> {
             response.type("application/json");
 
@@ -178,6 +233,29 @@ public class App
             System.out.println(responseJson);
             return responseJson.toString();
         });
+
+        post("/frontend/eliminarReservacion", (request, response) -> {
+            response.type("application/json");
+            String payload = request.body();
+            JsonElement jsonElement = JsonParser.parseString(payload);
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            String idReservacion = jsonObject.get("datosId").getAsJsonObject().get("idReservacion").getAsString();
+        
+            // Lógica para eliminar la reservación usando el ID
+            boolean eliminado = DAO.eliminarReservacion(idReservacion);
+        
+            JsonObject respuesta = new JsonObject();
+            if (eliminado) {
+                respuesta.addProperty("msj", "Reservación eliminada exitosamente.");
+            } else {
+                respuesta.addProperty("msj", "No se encontró ninguna reservación con el ID especificado.");
+            }
+        
+            return respuesta.toString();
+        });
+
+
+
 
 
 
