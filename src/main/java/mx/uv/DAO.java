@@ -131,6 +131,73 @@ public class DAO {
         }
     }
 
+    public static boolean existeUsuarioPorCorreo(String correo) {
+        PreparedStatement stm = null;
+        Connection conn = null;
+
+        conn = Conexion.getConnection();
+        try {
+            String sql = "SELECT COUNT(*) as num_usuarios FROM usuarios WHERE correo = ?";
+            stm = conn.prepareStatement(sql);
+            stm.setString(1, correo);
+
+            ResultSet rs = stm.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("num_usuarios") > 0; // Devuelve true si existe al menos un usuario con ese correo
+            } else {
+                return false; // Devuelve false si no hay usuarios con ese correo
+            }
+
+        } catch (Exception e) {
+            System.out.println(e);
+            return false; // Manejar adecuadamente las excepciones en tu aplicación real
+        } finally {
+            // Cerrar recursos
+            if (stm != null) {
+                try {
+                    stm.close();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+            try {
+                conn.close();
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        }
+    }
+
+    public static String cambiarContrasena(String correo, String nuevaContrasena) {
+        String mensaje = "";
+
+        try (Connection conn = Conexion.getConnection();
+                PreparedStatement stm = conn.prepareStatement("UPDATE usuarios SET password = ? WHERE correo = ?")) {
+
+            // Verificar si el usuario existe
+            if (existeUsuarioPorCorreo(correo)) {
+                stm.setString(1, nuevaContrasena);
+                stm.setString(2, correo);
+
+                if (stm.executeUpdate() > 0) {
+                    mensaje = "Contraseña actualizada correctamente";
+                } else {
+                    mensaje = "No se pudo actualizar la contraseña";
+                }
+            } else {
+                mensaje = "Usuario no encontrado";
+            }
+
+        } catch (SQLException e) {
+            // Manejo de excepciones (puedes personalizar este manejo según tus necesidades)
+            mensaje = "Error al actualizar la contraseña";
+            e.printStackTrace(); // O registra la excepción en un sistema de registro
+        }
+
+        return mensaje;
+    }
+
     public static String obtenerIdUsuario(String correo, String password) {
         PreparedStatement stm = null;
         Connection conn = null;
