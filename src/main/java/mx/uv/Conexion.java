@@ -5,10 +5,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Conexion {
-    private static String url = "jdbc:mysql://127.0.0.1:3306/dbhotel";
-    private static String driverName = "com.mysql.cj.jdbc.Driver"; // com.mysql.cj.jdbc.Driver
-    private static String username = "hotel";
-    private static String password = "hotel";
+    private static String url = "jdbc:mysql://db4free.net:3306/mcndhoteles";
+    private static String driverName = "com.mysql.cj.jdbc.Driver";
+    private static String username = "mcndhoteles";
+    private static String password = "mcndhoteles";
     // variable de conexion
     private static Connection connection = null;
 
