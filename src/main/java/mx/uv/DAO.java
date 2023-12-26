@@ -131,6 +131,40 @@ public class DAO {
         }
     }
 
+    public static boolean correoExistente(String correo) {
+        PreparedStatement stm = null;
+        Connection conn = null;
+    
+        conn = Conexion.getConnection();
+        try {
+            String sql = "SELECT * FROM usuarios WHERE correo = ?";
+            stm = conn.prepareStatement(sql);
+            stm.setString(1, correo);
+    
+            ResultSet rs = stm.executeQuery();
+    
+            return rs.next(); // Devuelve true si hay una coincidencia (correo existente), false si no hay coincidencia
+    
+        } catch (Exception e) {
+            System.out.println(e);
+            return false; // Manejar adecuadamente las excepciones en tu aplicación real
+        } finally {
+            // Cerrar recursos
+            if (stm != null) {
+                try {
+                    stm.close();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+            try {
+                conn.close();
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        }
+    }
+
     public static boolean existeUsuarioPorCorreo(String correo) {
         PreparedStatement stm = null;
         Connection conn = null;

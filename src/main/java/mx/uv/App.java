@@ -73,6 +73,29 @@ public class App
             return gson.toJson(usuario);
         });
 
+        post("/frontend/correoExiste", (request, response) -> {
+            response.type("application/json");
+        
+            // Obtener datos del formulario enviado
+            String payload = request.body();
+    
+            // Parsear el cuerpo JSON
+            JsonObject jsonObject = JsonParser.parseString(payload).getAsJsonObject();
+        
+            // Acceder a la clave "datosFormulario" y luego obtener la clave "correo"
+            String correo = jsonObject.getAsJsonObject("datosFormulario").get("correo").getAsString();
+            
+            System.out.println("correo: "+correo);
+            // Verificar si el correo existe
+            boolean correoExistente = DAO.correoExistente(correo);
+        
+            // Construir un objeto JSON con la información sobre si el correo existe
+            JsonObject resultadoJson = new JsonObject();
+            resultadoJson.addProperty("correoExistente", correoExistente);
+        
+            return resultadoJson.toString();
+        });
+
         post("/frontend/obtenerUsuario", (request, response) -> {
             response.type("application/json");
         
